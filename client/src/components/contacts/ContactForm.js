@@ -1,14 +1,34 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import ContactContext from '../../context/contact/contactContext';
 
 const ContactForm = () => {
   const contactContext = useContext(ContactContext);
+
+  const { addContact, updateContact, clearCurrent, current } = contactContext;
+
+  useEffect(() => {
+    if (current != null) {
+      setContact(current);
+    } else {
+      setContact({
+        name: '',
+        email: '',
+        phone: '',
+        type: 'personal'
+      });
+    }
+  }, [contactContext, current]);
+
   const [contact, setContact] = useState({
     name: '',
     email: '',
     phone: '',
     type: 'personal'
   });
+
+  const clearAll = () => {
+    clearCurrent();
+  };
 
   const { name, email, phone, type } = contact;
 
@@ -17,7 +37,12 @@ const ContactForm = () => {
 
   const onSubmit = e => {
     e.preventDefault();
-    contactContext.addContact(contact);
+    if (current === null) {
+      addContact(contact);
+    } else {
+      updateContact(contact);
+    }
+
     setContact({
       name: '',
       email: '',
@@ -28,10 +53,12 @@ const ContactForm = () => {
 
   return (
     <form onSubmit={onSubmit}>
-      <h2 className='text-dark text-center'>Add Contact</h2>
+      <h2 className='text-dark text-center'>
+        {current ? 'Edit Contact' : 'Add Contact'}
+      </h2>
       <input
         type='text'
-        placeholder='name'
+        placeholder='Name'
         name='name'
         value={name}
         onChange={onChange}
@@ -70,10 +97,17 @@ const ContactForm = () => {
       <div>
         <input
           type='submit'
-          value='Add Contact'
+          value={current ? 'Update Contact' : 'Add Contact'}
           className='btn btn-dark btn-block'
         />
       </div>
+      {current && (
+        <div>
+          <button className='btn btn-light btn-block' onClick={clearAll}>
+            Clear
+          </button>
+        </div>
+      )}
     </form>
   );
 };
